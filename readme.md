@@ -17,7 +17,7 @@ This project allows users to chat with the Gemini AI model in real time through 
 
 ## 📸 Preview
 
-![Gemini Clone](https://gemini-flash-web.vercel.app/)
+![Gemini Clone]([text](https://gemini-flash-web.vercel.app/))
 
 ---
 
