@@ -1,5 +1,3 @@
-// Gemini Clone Web App with Markdown Support and Paragraph Spacing
-
 const typingForm = document.querySelector(".typing-form");
 const chatContainer = document.querySelector(".chat-list");
 const suggestions = document.querySelectorAll(".suggestion");
@@ -50,36 +48,31 @@ const createMessageElement = (content, ...classes) => {
     return div;
 };
 
-// ✅ UPDATED: Show typing effect by displaying paragraphs with Markdown support
-// Show typing effect by displaying structured Markdown properly
+// Show typing effect by displaying words one by one
 const showTypingEffect = (text, textElement, incomingMessageDiv) => {
-    const htmlText = marked.parse(text);
-    const tempDiv = document.createElement("div");
-    tempDiv.innerHTML = htmlText;
-
-    const blocks = Array.from(tempDiv.children);
-    let currentIndex = 0;
-
+    const words = text.split(" ");
+    let currentWordIndex = 0;
     const typingInterval = setInterval(() => {
-        if (currentIndex < blocks.length) {
-            const block = blocks[currentIndex++];
-            textElement.appendChild(block);
+        // Append each word to the text element with a space
+        textElement.innerText +=
+            (currentWordIndex === 0 ? "" : " ") + words[currentWordIndex++];
 
-            incomingMessageDiv.querySelector(".icon").classList.add("hide");
+        incomingMessageDiv.querySelector(".icon").classList.add("hide");
 
-            if (!isUserScrolling) {
-                chatContainer.scrollTo(0, chatContainer.scrollHeight);
-            }
-        } else {
+        // Scroll only if user hasn't scrolled manually
+        if (!isUserScrolling) {
+            chatContainer.scrollTo(0, chatContainer.scrollHeight);
+        }
+
+        // If all words are displayed
+        if (currentWordIndex === words.length) {
             clearInterval(typingInterval);
             isResponseGenerating = false;
             incomingMessageDiv.querySelector(".icon").classList.remove("hide");
             localStorage.setItem("saved-chats", chatContainer.innerHTML);
         }
-    }, 200);
+    }, 75);
 };
-
-
 
 // Fetch response from the API based on user message
 const generateAPIResponse = async (incomingMessageDiv) => {
@@ -100,10 +93,11 @@ const generateAPIResponse = async (incomingMessageDiv) => {
         const data = await response.json();
         if (!response.ok) throw new Error(data.error.message);
 
-        // Get the API response text and clean unwanted symbols
-        const apiResponse = data.candidates[0].content.parts[0].text
-            .replace(/\*\*(.*?)\*\*/g, "$1") // remove bold markdown (optional)
-            .replace(/\*(.*?)\*/g, "$1"); // remove single asterisks
+        // Get the API response text and remove asterisks
+        const apiResponse = data.candidates[0].content.parts[0].text.replace(
+            /\*\*(.*?)\*\*/g,
+            "$1"
+        );
 
         showTypingEffect(apiResponse, textElement, incomingMessageDiv);
     } catch (error) {
